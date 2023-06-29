@@ -69,7 +69,7 @@ def crawl_everyday(rss_list):
 # main code 
 rss_list=[ # 매일경제, jtbc, 전자신문
 {'category':'지구촌','link':['https://www.mk.co.kr/rss/30300018/','https://fs.jtbc.co.kr/RSS/international.xml','http://rss.etnews.com/12.xml'] },
-{'category':'문화/연예','link':['https://fs.jtbc.co.kr/RSS/culture.xml','https://fs.jtbc.co.kr/RSS/entertainment.xml','https://www.mk.co.kr/rss/30000023/','']},
+{'category':'문화/연예','link':['https://fs.jtbc.co.kr/RSS/culture.xml','https://fs.jtbc.co.kr/RSS/entertainment.xml','https://www.mk.co.kr/rss/30000023/']},
 {'category':'산업/과학','link':['https://rss.etnews.com/20.xml','https://rss.etnews.com/16.xml','https://rss.etnews.com/17.xml'] },
 {'category':'스포츠','link':['https://fs.jtbc.co.kr/RSS/sports.xml','https://www.mk.co.kr/rss/71000001/'] },
 {'category':'경제','link':['https://fs.jtbc.co.kr/RSS/economy.xml','https://www.mk.co.kr/rss/30100041/',] }
