@@ -93,8 +93,8 @@ router.get('/:id', (req, res) => {
 router.post('/new', (req, res) => {
   const { title, author, category, summary, link, published_at } = req.body;
 
-  if (!title || !author || !category || !link) {
-    return res.status(400).json({ error: 'title, author, category, link values should be provided' });
+  if (!title || !category || !link) {
+    return res.status(400).json({ error: 'title, category, link values should be provided' });
   }
 
   pool.query('INSERT INTO news (title, author, category, summary, link, published_at) VALUES (?, ?, ?, ?, ?, ?)', [title, author, category, summary, link, published_at], (error, results) => {
