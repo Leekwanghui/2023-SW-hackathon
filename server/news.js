@@ -141,7 +141,7 @@ router.put('/bookmark', (req, res) => {
 	  return res.status(400).json({ error: 'Invalid News ID' });
 	}
   
-	pool.query('UPDATE news SET bookmark = ?', status, (error, results) => {
+	pool.query('UPDATE news SET bookmark=? WHERE id=?', [status, parseInt(id)], (error, results) => {
 	  if (error) {
 		res.status(500).json({ error: 'Internal Server Error' });
 		throw error;
@@ -154,3 +154,4 @@ router.put('/bookmark', (req, res) => {
   });  
 
 module.exports = router;
+
