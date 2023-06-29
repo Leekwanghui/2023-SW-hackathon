@@ -5,6 +5,7 @@ const aws = require('aws-sdk');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
 const fs = require('fs');
+const { log } = require('console');
 
 const s3 = new aws.S3({
 	accessKeyId: process.env.accessKeyId,
@@ -121,7 +122,7 @@ router.post('/new', upload.single('image'), (req, res) => {
   
 	// Decoding base64 image
 	const base64Data = new Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
-	const newImagePath = `./uploads/${title}-${Date.now()}.jpg`;
+	const newImagePath = `./${Date.now()}.jpg`;
 	fs.writeFile(newImagePath, base64Data, 'binary', (err) => { //export image
 	  if (err) {
 		return res.status(500).json({ error: 'Error while saving image' });
@@ -130,7 +131,7 @@ router.post('/new', upload.single('image'), (req, res) => {
   
 	  const params = {
 		Bucket: process.env.bucketName,
-		Key: `news_images/${title}-${Date.now()}.jpg`,
+		Key: `${Date.now()}.jpg`,
 		Body: fileContent
 	  };
   
