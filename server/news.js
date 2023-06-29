@@ -79,6 +79,8 @@ router.get('/:id', (req, res) => {
  *                 type: string
  *               link:
  *                 type: string
+ *               image_url:
+ *                 type: string
  *               published_at:
  *                 type: string
  *                 format: date-time
@@ -91,13 +93,13 @@ router.get('/:id', (req, res) => {
  *         description: Internal Server Error.
  */
 router.post('/new', (req, res) => {
-  const { title, author, category, summary, link, published_at } = req.body;
+  const { title, author, category, summary, link, image_url, published_at } = req.body;
 
   if (!title || !category || !link) {
     return res.status(400).json({ error: 'title, category, link values should be provided' });
   }
 
-  pool.query('INSERT INTO news (title, author, category, summary, link, published_at) VALUES (?, ?, ?, ?, ?, ?)', [title, author, category, summary, link, published_at], (error, results) => {
+  pool.query('INSERT INTO news (title, author, category, summary, link, image_url, published_at) VALUES (?, ?, ?, ?, ?, ?, ?)', [title, author, category, summary, link, image_url, published_at], (error, results) => {
     if (error) {
       res.status(500).json({ error: 'Internal Server Error' });
       throw error;
