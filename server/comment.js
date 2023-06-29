@@ -4,7 +4,7 @@ const pool = require('./connection');
 
 /**
  * @swagger
- * /comment/{id}:
+ * /comment/{mynews_id}:
  *   get:
  *     summary: Get list of news with {MyNews Id}
  *     parameters:
