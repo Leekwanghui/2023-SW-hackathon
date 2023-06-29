@@ -22,8 +22,8 @@ def is_positive(entry_title):
     response = requests.post(url, data=json.dumps(body), headers=headers)
     result = json.loads(response.text)
     #출력
-    sentiment=result["document"]["sentiment"]
-    return (sentiment=='positive')
+    positivity=result["document"]["confidence"]['positive']
+    return (positivity>90)
 
 def upload(positive_list,category): # db에 적재
     for news in positive_list:
@@ -55,9 +55,7 @@ def crawl_rss_feed(feed_url,category,positive_list): # 하나의 rss xml에 대�
 
 
 
-# rss_url='http://rss.etnews.com/12.xml'
-# positive_list=crawl_rss_feed(rss_url)      
-# print(positive_list)
+
 def crawl_everyday(rss_list):
     for rss in rss_list: # dict 수만큼 반복
         positive_list=[]
@@ -68,7 +66,7 @@ def crawl_everyday(rss_list):
 
 # main code 
 rss_list=[ # 매일경제, jtbc, 전자신문
-{'category':'지구촌','link':['https://www.mk.co.kr/rss/30300018/','https://fs.jtbc.co.kr/RSS/international.xml','http://rss.etnews.com/12.xml'] },
+{'category':'세계','link':['https://rss.donga.com/international.xml'] },
 {'category':'문화/연예','link':['https://fs.jtbc.co.kr/RSS/culture.xml','https://fs.jtbc.co.kr/RSS/entertainment.xml','https://www.mk.co.kr/rss/30000023/']},
 {'category':'산업/과학','link':['https://rss.etnews.com/20.xml','https://rss.etnews.com/16.xml','https://rss.etnews.com/17.xml'] },
 {'category':'스포츠','link':['https://fs.jtbc.co.kr/RSS/sports.xml','https://www.mk.co.kr/rss/71000001/'] },
