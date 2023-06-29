@@ -5,6 +5,26 @@ const aws = require('aws-sdk');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
 
+const s3 = new aws.S3({
+	accessKeyId: process.env.accessKeyId,
+	secretAccessKey: process.env.secretAccessKey,
+	region: process.env.region
+  });
+  
+  const upload = multer({
+	storage: multerS3({
+	  s3: s3,
+	  bucket: process.env.bucketName,
+	  acl: 'public-read',
+	  metadata: function (req, file, cb) {
+		cb(null, {fieldName: file.fieldname});
+	  },
+	  key: function (req, file, cb) {
+		cb(null, Date.now().toString())
+	  }
+	})
+  });
+
 /**
  * @swagger
  * /mynews:
@@ -64,11 +84,11 @@ router.get('/:id', (req, res) => {
  * @swagger
  * /mynews/new:
  *   post:
- *     summary: Create a new MyNews
+ *     summary: Create a new MyNews and upload an image
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -78,29 +98,33 @@ router.get('/:id', (req, res) => {
  *                 type: string
  *               body:
  *                 type: string
+ *               image:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       201:
- *         description: MyNews created (OK).
+ *         description: MyNews created and image uploaded (OK).
  *       400:
  *         description: Invalid input, object invalid.
  *       500:
  *         description: Internal Server Error.
  */
-router.post('/new', (req, res) => {
+router.post('/new', upload.single('image'), (req, res) => {
 	const { title, author, body } = req.body;
   
-	if (!title || !author || !body ) {
-	  return res.status(400).json({ error: 'title, author, body values should be provided' });
+	if (!title || !author || !body) {
+	  return res.status(400).json({ error: 'title, author, body should be provided' });
 	}
-
+  
+	const imageUrl = req.file.location;
 	const created_at = new Date().toISOString();
-
-	pool.query('INSERT INTO my_news (title, author, body, created_at) VALUES (?, ?, ?, ?)', [title, author, body, created_at], (error, results) => {
+  
+	pool.query('INSERT INTO my_news (title, author, body, image_url, created_at) VALUES (?, ?, ?, ?, ?)', [title, author, body, imageUrl, created_at], (error, results) => {
 	  if (error) {
 		res.status(500).json({ error: 'Internal Server Error' });
 		throw error;
 	  }
-	  res.status(201).json({ message: `MyNews added with ID: ${results.insertId}` });
+	  res.status(201).json({ message: `MyNews added with ID: ${results.insertId}, Image URL: ${imageUrl}` });
 	});
   });
 
@@ -141,64 +165,5 @@ router.put('/like/:id', (req, res) => {
 	  res.status(200).json({ message: `MyNews with ID: ${id} liked` });
 	});
 });  
-
-const s3 = new aws.S3({
-	accessKeyId: process.env.accessKeyId,
-	secretAccessKey: process.env.secretAccessKey,
-	region: process.env.region
-  });
-  
-  const upload = multer({
-	storage: multerS3({
-	  s3: s3,
-	  bucket: process.env.bucketName,
-	  acl: 'public-read',
-	  metadata: function (req, file, cb) {
-		cb(null, {fieldName: file.fieldname});
-	  },
-	  key: function (req, file, cb) {
-		cb(null, Date.now().toString())
-	  }
-	})
-  });
-  
-  /**
-   * @swagger
-   * /mynews/uploadImage:
-   *   post:
-   *     summary: Upload an image to AWS S3
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         multipart/form-data:
-   *           schema:
-   *             type: object
-   *             properties:
-   *               image:
-   *                 type: string
-   *                 format: binary
-   *     responses:
-   *       201:
-   *         description: Image uploaded and URL saved (OK).
-   *       400:
-   *         description: Invalid input, object invalid.
-   *       500:
-   *         description: Internal Server Error.
-   */
-  router.post('/uploadImage', upload.single('image'), (req, res) => {
-	if (!req.file) {
-	  return res.status(400).json({ error: 'Image file should be provided' });
-	}
-	
-	const imageUrl = req.file.location;
-
-	pool.query('INSERT INTO my_news (image_url) VALUES (?)', [imageUrl], (error, results) => {
-	  if (error) {
-		res.status(500).json({ error: 'Internal Server Error' });
-		throw error;
-	  }
-	  res.status(201).json({ message: `MyNews image uploaded with URL: ${imageUrl}` });
-	});
-  });
 
 module.exports = router;
