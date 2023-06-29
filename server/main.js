@@ -23,7 +23,7 @@ const swaggerOptions = {
 		info: {
 		title: 'LittleBit Backend Api',
 		description: 'SWUniv News Service API Server',
-		servers:['http://localhost:3000']
+		servers:['http://localhost:8080']
 		}
 	},
 	apis: ['./news.js', './my_news.js', './comment.js']
@@ -32,7 +32,7 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/swagger/apis', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`running port : ${PORT}.`);
 });
