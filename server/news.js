@@ -108,4 +108,49 @@ router.post('/new', (req, res) => {
   });
 });
 
+
+ /**
+ * @swagger
+ * /news/bookmark:
+ *   put:
+ *     summary: Bookmark a News
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               status:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: News Bookmarked (OK).
+ *       400:
+ *         description: Invalid ID.
+ *       404:
+ *         description: News not found.
+ *       500:
+ *         description: Internal Server Error.
+ */
+router.put('/bookmark', (req, res) => {
+  const { id, status } = req.body;
+	if (isNaN(id)) {
+	  return res.status(400).json({ error: 'Invalid News ID' });
+	}
+  
+	pool.query('UPDATE news SET bookmark = ?', status, (error, results) => {
+	  if (error) {
+		res.status(500).json({ error: 'Internal Server Error' });
+		throw error;
+	  }
+	  if (results.affectedRows === 0) {
+		return res.status(404).json({ error: 'News not found' });
+	  }
+	  res.status(200).json({ message: `News with ID: ${id} status changed` });
+	});
+  });  
+
 module.exports = router;
