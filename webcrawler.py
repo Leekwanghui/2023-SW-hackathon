@@ -1,22 +1,23 @@
 import requests
-from bs4 import BeautifulSoup
-# numpy 같이 anaconda에 기본으로 깔려있는 패키지 쓰려면 interpreter를 conda로 설정하면 됨
-# 다시 pip install 해서 깔 필요 없음
+import feedparser
 
-url = "http://swcon.khu.ac.kr/people/undergraduate/"
-res=requests.get(url)
-res.raise_for_status()
-soup = BeautifulSoup(res.text, "lxml")
-
-#departments=soup.find_all('a',attr={'text':'새 창 열림'})
-links=soup.find_all("a",text='O') # list 반환
-i=0
-for x in links:
-    link=x.get('href')
-    if 'github' in link:
-        print(link)
-        i+=1
-print('github 수 :',i,'개 out of',len(links))
+def crawl_rss_feed(feed_url):
+    # RSS 피드 파싱
+    feed = feedparser.parse(feed_url)
+    # 피드 정보 출력
+    print("Feed Title:", feed.feed.title)
+    print("Feed Description:", feed.feed.description)
+    print("Feed Link:", feed.feed.link)
+    # 피드 아이템 순회
+    for entry in feed.entries:
+        print("\nEntry Title:", entry.title)
+        print("Entry Link:", entry.link)
+        print("Entry Description:", entry.description)
+        print("Entry Published Date:", entry.published)
+# 크롤링할 RSS 피드 URL
+rss_url = "https://www.mk.co.kr/rss/30100041/"
+# 피드 크롤링 실행
+crawl_rss_feed(rss_url)
 
 # https://seungjuitmemo.tistory.com/203
 # https://hleecaster.com/python-web-crawling-with-beautifulsoup/
