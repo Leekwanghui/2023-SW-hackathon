@@ -4,6 +4,7 @@ const pool = require('./connection');
 const aws = require('aws-sdk');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
+const fs = require('fs');
 
 const s3 = new aws.S3({
 	accessKeyId: process.env.accessKeyId,
@@ -110,23 +111,47 @@ router.get('/:id', (req, res) => {
  *         description: Internal Server Error.
  */
 router.post('/new', upload.single('image'), (req, res) => {
-	const { title, author, body } = req.body;
+	const { title, author, body, image } = req.body;
   
 	if (!title || !author || !body) {
 	  return res.status(400).json({ error: 'title, author, body should be provided' });
 	}
   
-	const imageUrl = req.file.location;
 	const created_at = new Date().toISOString();
   
-	pool.query('INSERT INTO my_news (title, author, body, image_url, created_at) VALUES (?, ?, ?, ?, ?)', [title, author, body, imageUrl, created_at], (error, results) => {
-	  if (error) {
-		res.status(500).json({ error: 'Internal Server Error' });
-		throw error;
+	// Decoding base64 image
+	const base64Data = new Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+	const newImagePath = `./uploads/${title}-${Date.now()}.jpg`;
+	fs.writeFile(newImagePath, base64Data, 'binary', (err) => { //export image
+	  if (err) {
+		return res.status(500).json({ error: 'Error while saving image' });
 	  }
-	  res.status(201).json({ message: `MyNews added with ID: ${results.insertId}, Image URL: ${imageUrl}` });
+	  const fileContent = fs.readFileSync(newImagePath);
+  
+	  const params = {
+		Bucket: process.env.bucketName,
+		Key: `news_images/${title}-${Date.now()}.jpg`,
+		Body: fileContent
+	  };
+  
+	  // Uploading files to the bucket
+	  s3.upload(params, function(err, data) {
+		if (err) {
+		  throw err;
+		}
+		fs.unlinkSync(newImagePath);
+  
+		pool.query('INSERT INTO my_news (title, author, body, image_url, created_at) VALUES (?, ?, ?, ?, ?)', [title, author, body, data.Location, created_at], (error, results) => {
+		  if (error) {
+			res.status(500).json({ error: 'Internal Server Error' });
+			throw error;
+		  }
+		  res.status(201).json({ message: `MyNews added with ID: ${results.insertId}, Image URL: ${data.Location}` });
+		});
+	  });
 	});
   });
+  
 
   /**
  * @swagger
